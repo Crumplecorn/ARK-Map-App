@@ -1,0 +1,3 @@
+passwords for maps
+coordinate display on map for markers / cursor
+auto-refresh for multi-user

@@ -1,0 +1,6 @@
+Options -Indexes
+
+RewriteEngine on
+RewriteRule ^(.*)\.(.*)$ - [L]
+RewriteRule ^(.*)/db/(.*)$ - [L]
+RewriteRule ^(.*)$ index.html

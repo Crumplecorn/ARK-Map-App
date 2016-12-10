@@ -1,0 +1,4 @@
+Options -Indexes
+
+RewriteEngine on
+RewriteRule ^(.*)$ db.php

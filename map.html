@@ -1,0 +1,281 @@
+	<div style="min-height:100%;display: flex">
+		<svg ng-hide="tableview || showhelp" ng-style="{'width': viewport.SVGWidth+'px', 'height': viewport.SVGHeight+'px'}" style="flex-shrink:0" ng-view-box="{{viewport.left}} {{viewport.top}} {{viewport.height}} {{viewport.width}}" zoomablesvg>
+			
+			<image ng-x="0" ng-y="0" width="1000px" height="1000px" xlink:href="{{mapstyles[mapstyle].mapimage}}" pannable />
+			
+			<g ng-repeat="marker in markers | objectToArray | filter: {name: filtering.name} | filter: markerAgeFilter">
+			<text marker markerindex="{{marker.id}}" ng-x="{{marker.x-marker.r*viewport.magfactor/viewport.zoomfactor}}" ng-y="{{marker.y-marker.r*1.1*viewport.magfactor/viewport.zoomfactor}}" fill="{{layers[marker.layer_id].color}}" font-family="Arial" font-size="{{(marker.r*2*viewport.magfactor+5)/viewport.zoomfactor}}px" font-weight="bold" shape-rendering="optimizeSpeed" ng-hide="layers[marker.layer_id].visible==0">{{marker.name}}</text>
+
+			<circle marker markerindex="{{marker.id}}" ng-cx="{{marker.x}}" ng-cy="{{marker.y}}" ng-r="{{marker.r*viewport.magfactor/viewport.zoomfactor}}" stroke="blue" stroke-width="{{marker.gps*1*viewport.magfactor/viewport.zoomfactor}}" fill="{{layers[marker.layer_id].color}}" opacity="1"  shape-rendering="optimizeSpeed"  ng-hide="layers[marker.layer_id].visible==0"/>
+
+			<text marker markerindex="{{marker.id}}" ng-x="{{marker.x+marker.r*1.1*viewport.magfactor/viewport.zoomfactor}}" ng-y="{{marker.y+marker.r*1.2*viewport.magfactor/viewport.zoomfactor}}" fill="{{layers[marker.layer_id].color}}" font-family="Arial" font-size="{{(marker.r*1.3*viewport.magfactor+5)/viewport.zoomfactor}}px" font-weight="bold" shape-rendering="optimizeSpeed" ng-hide="(layers[marker.layer_id].visible==0 || marker.showcoords==0)">{{marker.latitude}}, {{marker.longitude}}</text>
+			</g>
+
+			<text ng-x="{{viewport.mousex+3*viewport.magfactor/viewport.zoomfactor}}" ng-y="{{viewport.mousey-3*viewport.magfactor/viewport.zoomfactor}}" fill="white" fill-opacity="0.75" font-family="Arial" font-size="{{10/viewport.zoomfactor}}px" font-weight="bold" shape-rendering="optimizeSpeed">{{viewport.mousey | ytolat:coordsystem[currentcoordsystem].yoffset:coordsystem[currentcoordsystem].yscale:coordsystem[currentcoordsystem].latoffset}}, 
+				{{viewport.mousex | xtolong:coordsystem[currentcoordsystem].xoffset:coordsystem[currentcoordsystem].xscale:coordsystem[currentcoordsystem].longoffset}}</text>
+
+		</svg>
+
+		<!--<div class="box" ng-show="tableview">
+		<table>
+			<tr ng-repeat="marker in markers | objectToArray | filter: {name: filtering.name} | filter: markerAgeFilter">
+				<td>
+					<input ng-model="marker.name" ng-change="debounceSaveMarker(marker);" id="currentmarkername">
+				</td>
+				<td>
+					<input ng-model="marker.y" latitude ng-change="marker.gps='1';debounceSaveMarker(marker);">
+				</td>
+				<td>
+					<input ng-model="marker.x" longitude ng-change="marker.gps='1';debounceSaveMarker(marker);">
+				</td>
+				<td>
+					<select ng-options="index as layer.name for (index, layer) in layers" ng-model="marker.layer_id" ng-change="debounceSaveMarker(marker);"></select>
+				</td>
+				<td>
+					<input ng-model="marker.r" ng-change="debounceSaveMarker(marker);">
+				</td>
+				<td>
+					<input ng-model="marker.gps" type="checkbox" ng-true-value="'1'" ng-false-value="'0'" ng-checked="marker.gps == '1'" ng-change="debounceSaveMarker(marker);">
+				</td>
+				<td>
+					<input ng-model="marker.fav" type="checkbox" ng-true-value="'1'" ng-false-value="'0'" ng-checked="marker.fav == '1'" ng-change="toggleFavMarker(marker);">
+				</td>
+				<td>
+					<input ng-model="marker.description" ng-change="toggleFavMarker(marker);">
+				</td>
+			</tr>
+		</table>
+		</div>-->
+		<!--- <br>Zoom: {{viewport.zoomfactor}}<br>MouseX: {{viewport.mousex}}<br>MouseY: {{viewport.mousey}}<br>PanX: {{panning.finishx-panning.startx}}<br>PanY: {{panning.finishy-panning.starty}}<br>viewportLeft: {{viewport.left}}<br>viewportTop: {{viewport.top}}<br>{{markers[0].x}}<br>Dragmarker: {{markercontrol.drag}} -->
+
+	<div class="wrapperbox">
+		<div class="innerwrapperbox" ng-show="showhelp" ng-style="{'width': viewport.SVGWidth+'px', 'min-height': viewport.SVGHeight+'px'}">
+		<div class="box">
+			<b>Most Important</b>
+			<p>Map data is stored online. The map to open and save to is set in the URL. If a map is not specified, you are given a random new map. Please remember to note the URL if you make changes to the map. You could also open a map with a name you like before you start making changes, e.g. "http://ark.crumplecorn.com/map/mymap". Maps are not secured, so do not choose an obvious name.<br>
+			The actual GPS coordinate system is slightly different from the grid printed on the in-game maps, this map now uses the GPS grid. This means my map will give you accurate GPS coordinates, and if it disagrees with the lines on the paper/sci-fi maps, ignore the lines.<br>
+			The real time updates feature is somewhat experimental. It does not support delete operations, so if someone else deletes a marker, it will not disappear for you, and any edits you make to it will be lost.
+			</p>
+		</div>
+		<div class="box">
+			<b>Map</b>
+			<p><b>Create marker:</b> Double-Click desired location<br>
+				<b>Select marker:</b> Click on marker (the circle or the text)<br>
+				<b>Move marker:</b> Click+drag marker (circle or text)<br>
+				<b>Delete/Resize etc:</b> See "Selected Marker"<br>
+				<b>Zoom:</b> Mousewheel<br>
+				<b>Pan: </b> Click+drag map (when zoomed in)
+			</p>
+		</div>
+		<div class="box">
+			<b>Selected Marker</b>
+			<p>
+				In this box you can set the properties of the currently selected marker as follows:<br>
+				<b>Name/Lat/Long:</b> Self-explanatory<br>
+				<b>Layer:</b> A marker's layer defines its color and visibility<br>
+				<b>Size:</b> Size of the marker circle/text<br>
+				<b>GPS:</b> Indicate whether a marker is a precise GPS location or a hand-placed rough location. GPS verified markers have blue outlines. This property is automatically set if you enter lat/long.<br>
+				<b>Fav:</b> Markers marked as favourites appear in a list next to the map so you can quickly look up their coordinates.<br>
+				<b>Note:</b> Any extra information about a marker can be stored here.<br>
+				<b>Delete:</b> Tick the box and press the button to delete a marker. Cannot be undone.<br>
+				<b>Close:</b> Deselect the marker and make this box go away.
+			</p>
+		</div>
+		<div class="box">
+			<b>Favourite Markers</b>
+			<p>
+				Lists your favourite markers. Click a marker's name to selected it.
+			</p>
+		</div>
+		<div class="box">
+			<b>Layers</b>
+			<p>
+				Options for the various map layers.<br>
+				<b>New Layer:</b> Adds a new layer.<br>
+				<b>Layer:</b> Select a layer to edit.<br>
+				<b>Name:</b> Name the layer<br>
+				<b>Color:</b> Set the color for the layer. Must be a valid hex code or HTML color name; shows a native color picker in browsers which offer the feature.<br>
+				<b>Visible:</b> Set whether markers in this layer are visible on the map. This option is saved as a property of the layer.<br>
+				<b>Delete:</b> Check the box and press the button to delete a layer. You must also select a replacement layer for the markers on the layer you are deleting.<br>
+				<b>Close:</b> Deselect the layer and shrink this box.
+			</p>
+		</div>
+		<div class="box">
+			<b>Filters</b>
+			<p>
+				Show/hide markers based on some criteria:<br>
+				<b>Name:</b> Shows only markers whose name contains this.<br>
+				<b>Older Than:</b> Shows only markers which were last updated more than X days ago.<br>
+				<b>Newer Than:</b> Shows only markers which were last updated less than X days ago.
+			</p>
+		</div>
+		<div class="box">
+			<b>General</b>
+			<p>
+				A set of default empty layers are included to sort your markers into friendly, enemy, etc. Layers containing markers for the obelisks and caves are also included, but are invisible by default. The default markers and layers can be edited as normal, however if they are deleted the original default layer/marker will reappear.<br>
+				When a new marker is added, the 'Name' field in the 'Selected Marker' box will be given focus if it is visible. This lets you quickly enter new marker details as follows: [double-click] (type name) [tab] (type lat) [tab] (type long) and continue tabbing through properties if desired.<br>
+				Changes are auto-saved to the server, but there is a short delay (1 second) before changes are saved to reduce the quantity requests to the server. If you try to leave the page before a pending update is sent to the server, you will be prompted if you actually wish to leave. Remain on the page and leave after a second.
+			</p>
+		</div>
+		</div>
+		<div class="innerwrapperbox">
+		
+		<div class="box">
+			<table>
+			<tr><td>Map Style:</td><td><select ng-options="index as style.name for (index, style) in mapstyles" ng-model="mapstyle"></select></td></tr>
+			<tr><td>Show Help:</td><td><input type="checkbox" ng-model="showhelp"></td></tr>
+			<tr><td>Show Mouse Coords:</td><td><input type="checkbox" ng-model="showmousecoords"></td></tr>
+			<tr><td>Real time updates:</td><td><input type="checkbox" ng-model="realtime" ng-change="realTimeMode()"></td></tr>
+			<tr><td><a href="/map/" target="_blank">New Map</a></td></tr>
+			<tr><td><a href="http://crumplecorn.com/content/map-app">Feedback</a></td></tr>
+			</table>
+		</div>
+		
+		<div class="box"  ng-show="markercontrol.current!=null">
+			<b>Selected Marker</b>
+		<form>
+			<table>
+				<tr>
+					<td class="label">
+						Name:
+					</td>
+					<td>
+						<input ng-model="markercontrol.current.name" ng-change="debounceSaveMarker(markercontrol.current);" id="currentmarkername">
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						Lat:
+					</td>
+					<td>
+						<input ng-model="markercontrol.current.y" latitude ng-change="markercontrol.current.gps='1';debounceSaveMarker(markercontrol.current);">
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						Long:
+					</td>
+					<td>
+						<input ng-model="markercontrol.current.x" longitude ng-change="markercontrol.current.gps='1';debounceSaveMarker(markercontrol.current);">
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						Layer:
+					</td>
+					<td>
+						<select ng-options="index as layer.name for (index, layer) in layers" ng-model="markercontrol.current.layer_id" ng-change="debounceSaveMarker(markercontrol.current);"></select>
+						<input type="button" ng-click="layercontrol.current=layers[markercontrol.current.layer_id]" value="Go">
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						Size:
+					</td>
+					<td>
+						<input ng-model="markercontrol.current.r" ng-change="debounceSaveMarker(markercontrol.current);">
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						GPS:
+					</td>
+					<td>
+						<input ng-model="markercontrol.current.gps" type="checkbox" ng-true-value="'1'" ng-false-value="'0'" ng-checked="markercontrol.current.gps == '1'" ng-change="debounceSaveMarker(markercontrol.current);">
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						Fav:
+					</td>
+					<td>
+						<input ng-model="markercontrol.current.fav" type="checkbox" ng-true-value="'1'" ng-false-value="'0'" ng-checked="markercontrol.current.fav == '1'" ng-change="toggleFavMarker(markercontrol.current);">
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						Coords:
+					</td>
+					<td>
+						<input ng-model="markercontrol.current.showcoords" type="checkbox" ng-true-value="'1'" ng-false-value="'0'" ng-checked="markercontrol.current.showcoords == '1'"  ng-change="debounceSaveMarker(markercontrol.current);">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Note:
+					</td>
+					<td>
+						<textarea ng-model="markercontrol.current.description" ng-change="debounceSaveMarker(markercontrol.current);"></textarea>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Delete
+					</td>
+					<td>
+						<input type="button" ng-click="deleteCurrentMarker();" value="Delete">
+						<input type="checkbox" ng-model="markercontrol.current.confirmdelete" ng-true-value="1" ng-false-value="0" ng-checked="makercontrol.current.confirmdelete==1">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						Close
+					</td>
+					<td>
+						<input type="button" ng-click="closeCurrentMarker();" value="Close">
+					</td>
+				</tr>
+			</table>
+		</form>
+		</div>
+
+		<div class="box" ng-hide="favmarkercount==0">
+			<b>Favourite Markers:</b>
+			<table>
+				<tr><td class="label">Name</td><td class="label">Lat</td><td class="label">Long</td></tr>
+				<tr ng-class="{'selectedfav': favmarker.id==markercontrol.current.id}" ng-click="markercontrol.current=favmarker" ng-repeat="favmarker in favmarkers | objectToArray | orderBy: 'name'"><td>{{favmarker.name}}</td><td>{{favmarker.latitude}}</td><td>{{favmarker.longitude}}</td></tr>
+			</table>
+		</div>
+		</div>
+		<div class="innerwrapperbox">
+		<div class="box">
+			<b>Layers</b><br>
+			<table>
+				<tr><td>New Layer:</td><td><input type=button ng-click="addLayer()" value="New Layer"><br></td></tr>
+				<tr><td>Layer:</td><td><select ng-options="layer as layer.name for layer in layers" ng-model="layercontrol.current"><option value="" disabled>Select Layer</option></select></td></tr>
+				<tr ng-hide="layercontrol.current==null"><td>Name:</td><td><input ng-model="layercontrol.current.name" ng-change="debounceSaveLayer(layercontrol.current);"></td></tr>
+				<tr ng-hide="layercontrol.current==null"><td>Color:</td><td><input type="color" ng-model="layercontrol.current.color" ng-change="debounceSaveLayer(layercontrol.current);"></td></tr>
+				<tr ng-hide="layercontrol.current==null"><td>Visible:</td><td><input type="checkbox" ng-model="layercontrol.current.visible" ng-true-value="'1'" ng-false-value="'0'" ng-checked="layercontrol.current.visible=='1'" ng-change="debounceSaveLayer(layercontrol.current);"></td></tr>
+				<tr ng-hide="layercontrol.current==null"><td>Delete:</td><td>
+					<input type="button" ng-click="deleteCurrentLayer();" value="Delete">
+					<input type="checkbox" ng-model="layercontrol.current.confirmdelete" ng-true-value="1" ng-false-value="0" ng-checked="layercontrol.current.confirmdelete==1">
+					<select ng-options="layer as layer.name disable when layer==layercontrol.current for layer in layers" ng-model="layercontrol.replacement"><option value="" disabled selected>Replacement</option></select>
+				</td></tr>
+				<tr ng-hide="layercontrol.current==null"><td>Close:</td><td><input type="button" ng-click="closeCurrentLayer();" value="Close"></td></tr>
+			</table>
+		</div>
+		<div class="box">
+			<b>Filters</b><br>
+			<table>
+				<tr><td>Name:</td><td><input ng-model="filtering.name"></td></tr>
+				<tr><td>Older Than:</td><td><input style="width: 35px;" ng-model="filtering.minage"> days<input type="checkbox" ng-model="filtering.filterminage"></td></tr>
+				<tr><td>Newer Than:</td><td><input style="width: 35px;" ng-model="filtering.maxage"> days<input type="checkbox" ng-model="filtering.filtermaxage"></td></tr>
+			</table>
+		</div>
+		</div>
+	</div>
+	</div>
+
+		<!--- <form>
+			<select ng-options="item.name for item in layers" ng-model="currentlayer"></select><br>
+			<input ng-model="currentlayer.name"><br>
+			<input ng-model="currentlayer.color"><br>
+			<input ng-model="currentlayer.visible">
+		</form>
+
+		<form ng-submit="markers.$update()">
+			<input type="submit">
+		</form>
+
+		{{markers}} -->
+

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html ng-app="mapApp">
+<head>
+	<BASE href="/map/index.html">
+		<title>ARK Location Marking Map App</title>
+
+	<style>
+		text {
+			cursor: default;
+		}
+		body {
+			font-family: Arial;
+			font-size: 10pt;
+			color: white;
+			text-shadow: -1px -1px 1px #111111, 1px 1px 1px #111111;
+			background-attachment: fixed;
+			/*background-image: url(back.jpg);*/
+			background-repeat: no-repeat;
+			background-size: cover;
+			padding:0px;
+			margin: 0px;
+			height:100%;
+		}
+		a {
+			color: white;
+		}
+		table {
+			padding: 5px;
+		}
+		td {
+			padding: 2px;
+		}
+		.box {
+			background: linear-gradient(rgba(40, 100, 100, 0.7), rgba(40, 100, 100, 0.4));
+			border-radius: 10px;
+			padding: 10px;
+			margin: 10px;
+		}
+		.wrapperbox {
+			min-height: 100%;
+			display: inline-flex;
+			align-items: center;
+			align-content: center;
+			flex-wrap: wrap;
+			flex-direction: row;
+		}
+		.innerwrapperbox {
+			display:flex;
+			flex-wrap:wrap;
+			flex-direction: column;
+		}
+		.label {
+			font-weight: bold;
+		}
+		.selectedfav {
+			font-style: italic;
+			font-weight: bold;
+		}
+	</style>
+
+	<script src="angular.min.js"></script>
+	<script src="angular-resource.min.js"></script>
+	<script src="angular-route.min.js"></script>
+	<script src="angular-cookies.min.js"></script>
+
+	<script src="controller.js?d=20150907"></script>
+	<script src="mapcomponents.js?d=20150907"></script>
+
+	<script>
+
+function makeid()
+{
+    var text = "";
+    var possible = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < 10; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+}
+
+var genid=makeid();
+
+		var mapApp=angular.module('mapApp', ['ngResource', 'ngRoute', 'ngCookies', 'MapControllers', 'marker']);
+
+		mapApp.config(['$routeProvider', '$locationProvider', function($routeProvider,$locationProvider) {
+
+			$locationProvider.html5Mode(true);
+
+			$routeProvider.when('/:map_id', {
+				templateUrl: 'map.html', controller: 'MapController'
+			}).
+			otherwise({
+				redirectTo:'/'+genid
+			});
+
+		}])
+
+		mapApp.factory('MarkerService', ['$resource', '$routeParams', function($resource, $routeParams) {
+			return $resource('db/marker/:id', {id:'@id', map_id:$routeParams.map_id}, {
+				'update': {method:'PUT'},
+				'create': {method:'PUT', params: {"create": true}, isArray: false},
+				'save': {method:'PUT', isArray: false},
+				'poll': {method:'GET', params: {"time":'@time'}}
+			});
+		}]);
+
+		mapApp.factory('LayerService', ['$resource', '$routeParams', function($resource, $routeParams) {
+			return $resource('db/layer/:id', {id:'@id', map_id:$routeParams.map_id}, {
+				'update': {method:'PUT'},
+				'create': {method:'PUT', params: {"create": true}, isArray: false},
+				'save': {method:'PUT', isArray: false}
+			});
+		}]);
+
+		mapApp.directive("select", function() {
+		    return {
+		    	restrict: "E",
+		    	require: "?ngModel",
+		    	scope: false,
+		    	link: function (scope, element, attrs, ngModel) {
+			    	if (!ngModel) {
+			        	return;
+			        }
+			        element.bind("keyup", function() {
+			        	element.triggerHandler("change");
+			        });
+		    	}
+			}
+		});
+
+		angular.forEach(['x', 'y', 'r', 'cx', 'cy', 'viewBox', 'xlink:href'], function(name) {
+			var ngName = 'ng' + name[0].toUpperCase() + name.slice(1);
+				mapApp.directive(ngName, function() {
+				return function(scope, element, attrs) {
+					attrs.$observe(ngName, function(value) {
+						element[0].setAttribute(name, value); 
+					})
+				};
+			});
+		});
+
+		mapApp.filter('objectToArray', function() {
+			return function(input) {
+				var out = []; 
+				for(i in input){
+					if (input.hasOwnProperty(i) && !isNaN(i)) {
+						out.push(input[i]);
+					}
+				}
+				return out;
+			}
+		});
+
+	</script>
+</head>
+<body ng-style="{'background-image': 'url('+mapstyles[mapstyle].backgroundimage+')', 'background-color': mapstyles[mapstyle].backgroundcolor}">
+	<ng-view></ng-view>
+</body>
+</html>
